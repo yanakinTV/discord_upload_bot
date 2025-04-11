@@ -8,10 +8,12 @@ load_dotenv()
 TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 FLASK_BASE_URL = os.getenv("FLASK_BASE_URL")
 
+# 🔧 インテント設定（メッセージ内容の取得を許可）
 intents = discord.Intents.default()
+intents.message_content = True  # ← 重要
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# 一時的にユーザーIDとチャンネルIDを記録する辞書
+# 🗺️ 一時的にユーザーIDとチャンネルIDを記録する辞書
 user_channel_map = {}
 
 @bot.event
@@ -35,7 +37,7 @@ async def upload(interaction: discord.Interaction):
         ephemeral=True
     )
 
-# Flask 側から呼び出される非同期関数
+# 🎬 Flask から呼び出される、動画URL送信用の関数
 async def send_video_url(user_id: int, video_url: str):
     channel_id = user_channel_map.get(str(user_id))
     if channel_id:
@@ -47,4 +49,5 @@ async def send_video_url(user_id: int, video_url: str):
     else:
         print("⚠️ チャンネルIDが記録されていません")
 
+# 🚀 起動
 bot.run(TOKEN)
