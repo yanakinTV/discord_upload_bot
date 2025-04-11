@@ -1,61 +1,75 @@
-# app.py
 import os
-from flask import Flask, request, render_template, redirect, url_for, flash
-import boto3
+from flask import Flask, request, render_template
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
+import boto3
+import uuid
+import asyncio
+import bot  # bot.py をインポート
 
-# .env読み込み
 load_dotenv()
 
-# Flaskアプリ設定
 app = Flask(__name__)
-app.secret_key = os.getenv("FLASK_SECRET_KEY", "default_secret_key")
+UPLOAD_FOLDER = "uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-# Cloudflare R2の設定
+# Cloudflare R2 の設定
+R2_BUCKET = os.getenv("R2_BUCKET")
 R2_ENDPOINT = os.getenv("R2_ENDPOINT")
 R2_ACCESS_KEY = os.getenv("R2_ACCESS_KEY")
 R2_SECRET_KEY = os.getenv("R2_SECRET_KEY")
-R2_BUCKET = os.getenv("R2_BUCKET")
 R2_PUBLIC_URL = os.getenv("R2_PUBLIC_URL")
 
-# boto3 S3 client
 s3 = boto3.client(
-    's3',
+    "s3",
     endpoint_url=R2_ENDPOINT,
     aws_access_key_id=R2_ACCESS_KEY,
     aws_secret_access_key=R2_SECRET_KEY
 )
 
-UPLOAD_FOLDER = "uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# ユーザーIDに紐づくチャンネルIDを取得
+def get_channel_id(user_id):
+    if os.path.exists("channel_map.txt"):
+        with open("channel_map.txt", "r", encoding="utf-8") as f:
+            for line in f:
+                uid, cid = line.strip().split(":")
+                if uid == str(user_id):
+                    return int(cid)
+    return None
 
-@app.route("/upload/<upload_id>", methods=["GET", "POST"])
-def upload_file(upload_id):
+@app.route("/upload/<int:user_id>", methods=["GET", "POST"])
+def upload_file(user_id):
     if request.method == "POST":
-        if 'file' not in request.files:
-            flash("No file part")
-            return redirect(request.url)
+        if "file" not in request.files:
+            return render_template("error.html", message="ファイルが見つかりません")
 
-        file = request.files['file']
-        if file.filename == '':
-            flash("No selected file")
-            return redirect(request.url)
+        file = request.files["file"]
+        if file.filename == "":
+            return render_template("error.html", message="ファイルが選択されていません")
 
         filename = secure_filename(file.filename)
-        local_path = os.path.join(UPLOAD_FOLDER, filename)
+        local_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
         file.save(local_path)
 
-        try:
-            s3.upload_file(local_path, R2_BUCKET, filename)
-            public_url = f"{R2_PUBLIC_URL}/{filename}"
-            os.remove(local_path)
-            return render_template("complete.html", url=public_url, upload_id=upload_id)
-        except Exception as e:
-            flash(f"Upload failed: {str(e)}")
-            return redirect(request.url)
+        # R2 にアップロード
+        key = f"uploads/{uuid.uuid4()}_{filename}"
+        s3.upload_file(local_path, R2_BUCKET, key)
 
-    return render_template("upload.html", upload_id=upload_id)
+        # 公開URLを生成
+        file_url = f"{R2_PUBLIC_URL}/{key}"
+
+        # Discord Bot に通知（非同期）
+        try:
+            asyncio.run(bot.send_video_url(user_id, file_url))
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(bot.send_video_url(user_id, file_url))
+
+        return render_template("complete.html", file_url=file_url)
+
+    return render_template("upload.html", user_id=user_id)
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=True)
