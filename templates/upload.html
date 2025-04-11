@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🎮 Discord Upload Bot</title>
+  <style>
+    body {
+      background-color: #0a0a0a;
+      color: #e0e0e0;
+      font-family: 'Orbitron', 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2em;
+      margin: 0;
+    }
+    h1 {
+      color: #00ffc6;
+      text-shadow: 0 0 15px #00ffc6, 0 0 30px #008f78;
+      font-size: 2.5em;
+      margin-bottom: 0.5em;
+    }
+    .upload-box {
+      border: 2px dashed #444;
+      border-radius: 14px;
+      padding: 2em;
+      width: 90%;
+      max-width: 640px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.03);
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    .upload-box.dragover {
+      background: rgba(0, 255, 198, 0.08);
+      transform: scale(1.02);
+    }
+    button, input[type="file"]::file-selector-button {
+      background-color: #00ffc6;
+      border: none;
+      padding: 12px 24px;
+      margin: 1em 0.5em;
+      font-size: 1em;
+      font-weight: bold;
+      color: #000;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 0 12px #00ffc6;
+      transition: background 0.3s ease;
+    }
+    button:hover, input[type="file"]::file-selector-button:hover {
+      background-color: #00d1a3;
+    }
+    #preview img, #preview video {
+      margin-top: 1em;
+      max-width: 100%;
+      border: 2px solid #00ffc6;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #00ffc6;
+    }
+    p {
+      font-size: 1.1em;
+      opacity: 0.85;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎮 Discord Upload Bot</h1>
+  <form method="POST" enctype="multipart/form-data" class="upload-box" id="drop-area">
+    <p>Drag and drop your clip or image here</p>
+    <input type="file" name="file" id="fileInput" required>
+    <div id="preview"></div>
+    <button type="submit">Upload</button>
+  </form>
+
+  <script>
+    const dropArea = document.getElementById('drop-area');
+    const fileInput = document.getElementById('fileInput');
+    const preview = document.getElementById('preview');
+
+    dropArea.addEventListener('dragover', e => {
+      e.preventDefault();
+      dropArea.classList.add('dragover');
+    });
+
+    dropArea.addEventListener('dragleave', () => {
+      dropArea.classList.remove('dragover');
+    });
+
+    dropArea.addEventListener('drop', e => {
+      e.preventDefault();
+      dropArea.classList.remove('dragover');
+      fileInput.files = e.dataTransfer.files;
+      showPreview(fileInput.files[0]);
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) {
+        showPreview(fileInput.files[0]);
+      }
+    });
+
+    function showPreview(file) {
+      preview.innerHTML = "";
+      const fileType = file.type;
+      if (fileType.startsWith("image/")) {
+        const img = document.createElement("img");
+        img.src = URL.createObjectURL(file);
+        preview.appendChild(img);
+      } else if (fileType.startsWith("video/")) {
+        const video = document.createElement("video");
+        video.src = URL.createObjectURL(file);
+        video.controls = true;
+        preview.appendChild(video);
+      } else {
+        preview.innerText = "Selected file: " + file.name;
+      }
+    }
+  </script>
+</body>
+</html>

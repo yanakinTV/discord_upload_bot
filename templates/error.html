@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>❌ Upload Failed</title>
+  <style>
+    body {
+      background-color: #0a0a0a;
+      color: #ff4c4c;
+      font-family: 'Orbitron', 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2em;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      color: #ff4c4c;
+      text-shadow: 0 0 12px #ff4c4c, 0 0 24px #8f0000;
+      font-size: 2.2em;
+      margin-bottom: 0.5em;
+    }
+    p {
+      font-size: 1.1em;
+      color: #ffb3b3;
+      margin-bottom: 2em;
+      text-align: center;
+      max-width: 600px;
+    }
+    .back {
+      padding: 0.6em 1.2em;
+      background-color: #ff4c4c;
+      border: none;
+      border-radius: 6px;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 10px #ff4c4c;
+      transition: background 0.2s ease;
+    }
+    .back:hover {
+      background-color: #ff1a1a;
+    }
+  </style>
+</head>
+<body>
+  <h1>❌ Upload Failed</h1>
+  <p>{{ error }}</p>
+  <form action="{{ url_for('upload_file', upload_id='test') }}">
+    <button class="back" type="submit">⬅ Try Again</button>
+  </form>
+</body>
+</html>

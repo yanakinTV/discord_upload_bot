@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>✅ Upload Complete</title>
+  <style>
+    body {
+      background-color: #0a0a0a;
+      color: #e0e0e0;
+      font-family: 'Orbitron', 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2em;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      color: #00ffc6;
+      text-shadow: 0 0 15px #00ffc6, 0 0 30px #008f78;
+      font-size: 2.2em;
+      margin-bottom: 0.5em;
+    }
+    a {
+      color: #00ffc6;
+      text-decoration: none;
+      word-break: break-all;
+      font-size: 1.1em;
+      margin-top: 1em;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0.8em 1em;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #00ffc6;
+    }
+    a:hover {
+      background: rgba(0, 255, 198, 0.1);
+    }
+    .back {
+      margin-top: 2em;
+      padding: 0.6em 1.2em;
+      background-color: #00ffc6;
+      border: none;
+      border-radius: 6px;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 10px #00ffc6;
+      transition: background 0.2s ease;
+    }
+    .back:hover {
+      background-color: #00d1a3;
+    }
+  </style>
+</head>
+<body>
+  <h1>✅ Upload Complete!</h1>
+  <a href="{{ url }}" target="_blank">{{ url }}</a>
+  <form action="{{ url_for('upload_file', upload_id='test') }}">
+    <button class="back" type="submit">⬅ Back to Upload</button>
+  </form>
+</body>
+</html>
