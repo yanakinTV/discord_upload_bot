@@ -4,8 +4,6 @@ from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 import boto3
 import uuid
-import asyncio
-import bot  # bot.py をインポート
 
 load_dotenv()
 
@@ -59,13 +57,7 @@ def upload_file(user_id):
         # 公開URLを生成
         file_url = f"{R2_PUBLIC_URL}/{key}"
 
-        # Discord Bot に通知（非同期）
-        try:
-            asyncio.run(bot.send_video_url(user_id, file_url))
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            loop.run_until_complete(bot.send_video_url(user_id, file_url))
+        # Botに通知はローカル実行の bot.py 側でループ監視等により別で対応
 
         return render_template("complete.html", file_url=file_url)
 
