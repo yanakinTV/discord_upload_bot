@@ -1,4 +1,3 @@
-
 import os
 import discord
 from discord.ext import commands
@@ -30,13 +29,13 @@ async def upload(interaction: discord.Interaction):
     channel_id = interaction.channel_id
     user_channel_map[str(user_id)] = channel_id
 
-    upload_url = f"{FLASK_BASE_URL}/{user_id}"
+    upload_url = f"{FLASK_BASE_URL}/upload/{user_id}"
     await interaction.response.send_message(
-        f"📤 アップロードはこちらからどうぞ:
-{upload_url}",
+        f"📤 アップロードはこちらからどうぞ:\n{upload_url}",
         ephemeral=True
     )
 
+# Flask 側から呼び出される非同期関数
 async def send_video_url(user_id: int, video_url: str):
     channel_id = user_channel_map.get(str(user_id))
     if channel_id:
