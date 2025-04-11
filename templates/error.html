@@ -47,8 +47,8 @@
 </head>
 <body>
   <h1>❌ Upload Failed</h1>
-  <p>{{ error }}</p>
-  <form action="{{ url_for('upload_file', upload_id='test') }}">
+  <p>{{ message }}</p>
+  <form action="{{ url_for('upload_file', user_id=user_id) }}">
     <button class="back" type="submit">⬅ Try Again</button>
   </form>
 </body>

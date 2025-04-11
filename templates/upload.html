@@ -65,7 +65,12 @@
 </head>
 <body>
   <h1>🎮 Discord Upload Bot</h1>
-  <form method="POST" enctype="multipart/form-data" class="upload-box" id="drop-area">
+
+  <form method="POST"
+        action="{{ url_for('upload_file', user_id=user_id) }}"
+        enctype="multipart/form-data"
+        class="upload-box"
+        id="drop-area">
     <p>Drag and drop your clip or image here</p>
     <input type="file" name="file" id="fileInput" required>
     <div id="preview"></div>
