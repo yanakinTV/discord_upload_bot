@@ -1,11 +1,10 @@
-
 import os
+import uuid
+import asyncio
 from flask import Flask, request, render_template
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 import boto3
-import uuid
-import asyncio
 import bot  # bot.py をインポート
 
 load_dotenv()
@@ -15,6 +14,7 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
+# R2 の設定
 R2_BUCKET = os.getenv("R2_BUCKET")
 R2_ENDPOINT = os.getenv("R2_ENDPOINT")
 R2_ACCESS_KEY = os.getenv("R2_ACCESS_KEY")
@@ -32,21 +32,24 @@ s3 = boto3.client(
 def upload_file(user_id):
     if request.method == "POST":
         if "file" not in request.files:
-            return render_template("error.html", error="ファイルが見つかりません")
+            return render_template("error.html", message="ファイルが見つかりません")
 
         file = request.files["file"]
         if file.filename == "":
-            return render_template("error.html", error="ファイルが選択されていません")
+            return render_template("error.html", message="ファイルが選択されていません")
 
         filename = secure_filename(file.filename)
         local_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
         file.save(local_path)
 
+        # R2 にアップロード
         key = f"uploads/{uuid.uuid4()}_{filename}"
         s3.upload_file(local_path, R2_BUCKET, key)
 
+        # 公開URL生成
         file_url = f"{R2_PUBLIC_URL}/{key}"
 
+        # Discord Bot に通知（非同期）
         try:
             asyncio.run(bot.send_video_url(user_id, file_url))
         except RuntimeError:
@@ -54,7 +57,7 @@ def upload_file(user_id):
             asyncio.set_event_loop(loop)
             loop.run_until_complete(bot.send_video_url(user_id, file_url))
 
-        return render_template("complete.html", url=file_url)
+        return render_template("complete.html", file_url=file_url, user_id=user_id)
 
     return render_template("upload.html", user_id=user_id)
 
